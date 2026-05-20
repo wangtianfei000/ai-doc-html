@@ -1,0 +1,23 @@
+Business Source License 1.1
+
+License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
+
+Parameters
+Licensor:             [YOUR NAME / COMPANY]
+Licensed Work:        [PROJECT NAME]
+The Licensed Work is (c) [YEAR] [YOUR NAME / COMPANY]
+Additional Use Grant: You may make use of the Licensed Work for
+non-commercial purposes, and for evaluation purposes for up to 30 days.
+Change Date:          [YEAR + 3]-[MONTH]-[DAY]
+Change License:       MIT
+
+Terms
+The Licensor hereby grants you the right to copy, modify, create derivative
+works of, redistribute, and use the Licensed Work, provided that:
+1.  You do not use the Licensed Work for Commercial Use (as defined below).
+2.  After the Change Date, all rights to the Licensed Work are granted under
+    the Change License.
+
+Commercial Use means: any use of the Licensed Work for the purpose of
+obtaining commercial advantage or monetary compensation.

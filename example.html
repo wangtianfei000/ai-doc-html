@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三位一体最优解：AI文档格式终极方案</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mermaid v11 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <!-- Prism.js 代码高亮 -->
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-sql.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-yaml.min.js"></script>
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .prose-custom {
+                max-width: 65ch;
+                color: #374151;
+            }
+            .prose-custom h2 {
+                color: #1f2937;
+                font-weight: 700;
+                font-size: 1.5rem;
+                margin-top: 2rem;
+                margin-bottom: 1rem;
+            }
+            .prose-custom h3 {
+                color: #1f2937;
+                font-weight: 600;
+                font-size: 1.25rem;
+                margin-top: 1.5rem;
+                margin-bottom: 0.75rem;
+            }
+            .prose-custom p {
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+                line-height: 1.75;
+            }
+            .prose-custom ul {
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+                padding-left: 1.5rem;
+                list-style-type: disc;
+            }
+            .prose-custom li {
+                margin-top: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            .prose-custom table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+            }
+            .prose-custom th, .prose-custom td {
+                border: 1px solid #e5e7eb;
+                padding: 0.75rem;
+                text-align: left;
+            }
+            .prose-custom th {
+                background-color: #f9fafb;
+                font-weight: 600;
+            }
+            /* 代码块容器样式 */
+            .code-block-wrapper {
+                position: relative;
+                border-radius: 0.5rem;
+                overflow: hidden;
+                margin: 1rem 0;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            }
+            .code-block-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background-color: #1e293b;
+                color: #cbd5e1;
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+                border-bottom: 1px solid #334155;
+            }
+            .code-block-header .lang-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            }
+            .code-block-header .lang-dot {
+                width: 0.5rem;
+                height: 0.5rem;
+                border-radius: 9999px;
+                background-color: #38bdf8;
+            }
+            .code-copy-btn {
+                background: transparent;
+                border: 1px solid #475569;
+                color: #cbd5e1;
+                padding: 0.15rem 0.6rem;
+                border-radius: 0.375rem;
+                font-size: 0.75rem;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+            .code-copy-btn:hover {
+                background-color: #334155;
+                color: #fff;
+            }
+            .code-copy-btn.copied {
+                background-color: #10b981;
+                border-color: #10b981;
+                color: #fff;
+            }
+            .code-block-wrapper pre[class*="language-"] {
+                margin: 0;
+                border-radius: 0;
+                font-size: 0.875rem;
+                line-height: 1.55;
+                max-height: 480px;
+                overflow: auto;
+            }
+            /* Mermaid 图表居中显示 */
+            .mermaid {
+                text-align: center;
+            }
+            .mermaid svg {
+                display: block;
+                margin: 0 auto;
+            }
+        }
+    </style>
+    <!-- 打印 / 导出PDF 专用样式 -->
+    <style media="print">
+        @page {
+            size: A4;
+            margin: 12mm 10mm;
+        }
+        html, body {
+            background: #fff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        /* 隐藏顶部导航、页脚、按钮等不需要打印的元素 */
+        nav, footer, #exportPdfBtn, .no-print {
+            display: none !important;
+        }
+        main {
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+        section {
+            box-shadow: none !important;
+            border: 1px solid #e5e7eb !important;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            margin-bottom: 1rem !important;
+        }
+        h1, h2, h3 {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+        pre, table, .mermaid, .erp-arch, .code-block-wrapper {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">AI文档格式最优解</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">最后更新：2026-05-19</span>
+                    <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition" id="exportPdfBtn" onclick="exportToPDF()">
+                        📄 导出PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 标题区 -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                三位一体最优解
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                HTML统一容器 + Mermaid原生嵌入 + Tailwind组件化<br>
+                2026年AI文档格式的终极解决方案
+            </p>
+        </div>
+
+        <!-- 方案概述 -->
+        <section class="mb-12 bg-white rounded-xl shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">一、方案概述</h2>
+            <div class="prose-custom">
+                <p>
+                    本方案是经过大量实践验证的AI时代文档格式最优解，它完美解决了传统Markdown在富媒体支持、交互能力和视觉表达方面的不足，同时保持了AI生成效率高、版本控制友好的优势。
+                </p>
+                <p>
+                    核心思想是使用<strong>单文件HTML作为统一载体</strong>，同时承载三种不同类型的内容：
+                </p>
+                <ul>
+                    <li><strong>富文本文档</strong>：使用标准HTML标签配合Tailwind CSS实现专业排版</li>
+                    <li><strong>架构图/流程图</strong>：通过Mermaid CDN原生渲染，代码与文档同文件</li>
+                    <li><strong>界面原型</strong>：直接嵌入Tailwind CSS组件，支持真实交互</li>
+                </ul>
+                <p>
+                    这种三位一体的架构实现了"一次生成，处处使用"，极大提高了文档创作和协作效率。
+                </p>
+            </div>
+        </section>
+
+        <!-- 技术架构图 -->
+        <section class="mb-12 bg-white rounded-xl shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">二、技术架构</h2>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">2.1 整体架构图</h3>
+                <div class="border rounded-lg p-4 bg-gray-50">
+                    <pre class="mermaid">
+graph TD
+    subgraph 展示层 [展示层：单文件HTML]
+        A[富文本内容]
+        B[Mermaid架构图]
+        C[Tailwind界面原型]
+        D[Tailwind CSS v4 CDN]
+        E[Mermaid v11 CDN]
+    end
+    
+    subgraph 生成层 [生成层：大语言模型]
+        F[GPT-4o / Claude Opus]
+        G[统一提示词模板]
+    end
+    
+    subgraph 存储层 [存储层：纯文本]
+        H[Git版本控制]
+        I[结构化JSON元数据]
+    end
+    
+    subgraph 输出层 [输出层：多格式导出]
+        J[PDF]
+        K[Docx]
+        L[静态网站]
+    end
+    
+    G --> F
+    F --> A & B & C
+    D --> A & C
+    E --> B
+    A & B & C --> H & I
+    A & B & C --> J & K & L
+    
+    classDef layer fill:#f3f4f6,stroke:#374151,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#0369a1
+    classDef model fill:#f0fdf4,stroke:#166534
+    classDef storage fill:#fef3c7,stroke:#92400e
+    classDef output fill:#fce7f3,stroke:#9d174d
+    
+    class 展示层,生成层,存储层,输出层 layer
+    class A,B,C,D,E component
+    class F,G model
+    class H,I storage
+    class J,K,L output
+                    </pre>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">2.2 端到端工作流程</h3>
+                <div class="border rounded-lg p-4 bg-gray-50">
+                    <pre class="mermaid">
+sequenceDiagram
+    participant U as 用户
+    participant AI as 大语言模型
+    participant B as 浏览器
+    participant G as Git
+    
+    U->>AI: 自然语言需求描述
+    AI->>AI: 使用统一提示词模板处理
+    AI->>U: 生成完整单文件HTML
+    U->>B: 打开HTML文件预览
+    B->>B: 自动渲染Mermaid图表
+    B->>B: 加载Tailwind样式
+    B->>B: 运行原型交互逻辑
+    
+    alt 需要修改
+        U->>AI: 提出修改意见
+        AI->>U: 局部更新HTML代码
+        U->>B: 刷新查看修改效果
+    end
+    
+    U->>G: 提交HTML文件到Git
+    G->>G: 记录版本历史和差异
+    
+    alt 需要交付
+        U->>B: 导出为PDF
+        U->>Pandoc: 转换为Docx
+        U->>Vercel: 部署为静态网站
+    end
+                    </pre>
+                </div>
+            </div>
+
+            <!-- 2.3 ERP多层架构图丰富案例 -->
+            <div class="mt-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">2.3 复杂业务架构图案例（ERP产品框架）</h3>
+                <p class="text-gray-600 mb-4">
+                    以下是一个典型的企业级<strong>多层、多子系统</strong>架构图案例。考虑到 Mermaid 的 <code>subgraph</code> 会根据内容自适应宽度导致各层不等宽，本案例采用 <strong>Tailwind HTML</strong> 组件化实现，可准确控制四层等宽对齐，正好展示“三位一体”中 Tailwind 组件化的布局能力。
+                </p>
+                <div class="erp-arch border-2 border-cyan-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                    <!-- 顶部标题 -->
+                    <div class="bg-cyan-100 text-cyan-900 text-center py-2 font-bold border-b-2 border-cyan-300">
+                        ERP产品框架
+                    </div>
+
+                    <!-- 层级 1：业务应用层 -->
+                    <div class="flex border-b-2 border-cyan-300">
+                        <div class="w-10 bg-cyan-100 flex items-center justify-center border-r-2 border-cyan-300">
+                            <span class="text-cyan-900 text-sm font-bold" style="writing-mode:vertical-rl;letter-spacing:0.4em;">业务应用层</span>
+                        </div>
+                        <div class="flex-1 bg-cyan-50 p-3">
+                            <div class="grid grid-cols-12 gap-2 items-stretch">
+                                <!-- 供应商平台 -->
+                                <div class="col-span-5 border-2 border-dashed border-cyan-400 rounded-lg p-2 bg-white/50">
+                                    <div class="text-center text-sm font-semibold text-cyan-800 mb-2">供应商平台</div>
+                                    <div class="space-y-2">
+                                        <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                            <div class="text-xs font-medium text-cyan-700 text-center mb-1">结算管理</div>
+                                            <div class="grid grid-cols-2 gap-1.5">
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">应付单管理</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">结算单管理</div>
+                                            </div>
+                                        </div>
+                                        <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                            <div class="text-xs font-medium text-cyan-700 text-center mb-1">供应商管理</div>
+                                            <div class="grid grid-cols-2 gap-1.5">
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">供应商信息管理</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">合同管理</div>
+                                            </div>
+                                        </div>
+                                        <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                            <div class="text-xs font-medium text-cyan-700 text-center mb-1">商品管理</div>
+                                            <div class="grid grid-cols-2 gap-1.5">
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">商品清单管理</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">商品价格管理</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 中间流向箭头 -->
+                                <div class="col-span-2 flex flex-col justify-around items-center py-2">
+                                    <div class="flex items-center text-xs text-cyan-700">
+                                        <span class="font-medium">商品信息</span>
+                                        <span class="ml-1 text-base">←</span>
+                                    </div>
+                                    <div class="flex items-center text-xs text-cyan-700">
+                                        <span class="font-medium">采购信息</span>
+                                        <span class="ml-1 text-base">←</span>
+                                    </div>
+                                    <div class="flex items-center text-xs text-cyan-700">
+                                        <span class="font-medium">结算信息</span>
+                                        <span class="ml-1 text-base">←</span>
+                                    </div>
+                                </div>
+
+                                <!-- 采购系统 -->
+                                <div class="col-span-5 border-2 border-dashed border-cyan-400 rounded-lg p-2 bg-white/50">
+                                    <div class="text-center text-sm font-semibold text-cyan-800 mb-2">采购系统</div>
+                                    <div class="grid grid-cols-3 gap-1.5">
+                                        <!-- 列 1：进退管理 -->
+                                        <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                            <div class="text-xs font-medium text-cyan-700 text-center mb-1">进退管理</div>
+                                            <div class="space-y-1">
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">良品退货管理</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">残品退货管理</div>
+                                            </div>
+                                        </div>
+                                        <!-- 列 2：商品管理（高列） -->
+                                        <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                            <div class="text-xs font-medium text-cyan-700 text-center mb-1">商品管理</div>
+                                            <div class="space-y-1">
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">商品信息</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">仓储信息</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">价格信息</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">供应商关系</div>
+                                                <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">货款结算</div>
+                                            </div>
+                                        </div>
+                                        <!-- 列 3：合同/采购/协同 -->
+                                        <div class="space-y-1.5">
+                                            <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                                <div class="text-xs font-medium text-cyan-700 text-center mb-1">合同管理</div>
+                                                <div class="space-y-1">
+                                                    <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">资质管理</div>
+                                                    <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">合同管理</div>
+                                                </div>
+                                            </div>
+                                            <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                                <div class="text-xs font-medium text-cyan-700 text-center mb-1">采购管理</div>
+                                                <div class="space-y-1">
+                                                    <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">采购审批</div>
+                                                    <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">采购进度跟踪</div>
+                                                </div>
+                                            </div>
+                                            <div class="border border-dashed border-cyan-400 rounded p-1.5">
+                                                <div class="text-xs font-medium text-cyan-700 text-center mb-1">协同管理</div>
+                                                <div class="space-y-1">
+                                                    <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">库存预警</div>
+                                                    <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">调拨进出库</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 层级 2：应用支持层 -->
+                    <div class="flex border-b-2 border-yellow-300">
+                        <div class="w-10 bg-yellow-100 flex items-center justify-center border-r-2 border-yellow-300">
+                            <span class="text-yellow-900 text-sm font-bold" style="writing-mode:vertical-rl;letter-spacing:0.4em;">应用支持层</span>
+                        </div>
+                        <div class="flex-1 bg-yellow-50 p-3 border border-dashed border-yellow-400 m-2 rounded-lg">
+                            <div class="grid grid-cols-5 gap-2">
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">监控服务</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">通知服务</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">缓存服务</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">鉴权服务</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">消息服务</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">SpringCloud</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">任务调度</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">日志服务</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">配置服务</div>
+                                <div class="bg-white border border-yellow-400 rounded text-center text-xs py-2">存储服务</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 层级 3：信息资源层 -->
+                    <div class="flex border-b-2 border-orange-300">
+                        <div class="w-10 bg-orange-100 flex items-center justify-center border-r-2 border-orange-300">
+                            <span class="text-orange-900 text-sm font-bold" style="writing-mode:vertical-rl;letter-spacing:0.4em;">信息资源层</span>
+                        </div>
+                        <div class="flex-1 bg-orange-50 p-3 border border-dashed border-orange-400 m-2 rounded-lg">
+                            <div class="grid grid-cols-6 gap-2">
+                                <div class="flex flex-col items-center">
+                                    <div class="text-2xl">🗄️</div>
+                                    <div class="text-xs text-orange-800 mt-1">客户信息</div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="text-2xl">🗄️</div>
+                                    <div class="text-xs text-orange-800 mt-1">合同信息</div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="text-2xl">🗄️</div>
+                                    <div class="text-xs text-orange-800 mt-1">订单信息</div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="text-2xl">🗄️</div>
+                                    <div class="text-xs text-orange-800 mt-1">用户信息</div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="text-2xl">🗄️</div>
+                                    <div class="text-xs text-orange-800 mt-1">流程信息</div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="text-2xl">🗄️</div>
+                                    <div class="text-xs text-orange-800 mt-1">单据信息</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 层级 4：IT基础层 -->
+                    <div class="flex">
+                        <div class="w-10 bg-green-100 flex items-center justify-center border-r-2 border-green-300">
+                            <span class="text-green-900 text-sm font-bold" style="writing-mode:vertical-rl;letter-spacing:0.4em;">IT基础层</span>
+                        </div>
+                        <div class="flex-1 bg-green-50 p-3 border border-dashed border-green-400 m-2 rounded-lg">
+                            <div class="grid grid-cols-5 gap-2">
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">服务器</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">操作系统</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">虚拟化</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">网络</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">数据库</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">中间件</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">存储</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">安全设施</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">容器</div>
+                                <div class="bg-white border border-green-400 rounded text-center text-xs py-2">Nexus</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                    <strong>💡 案例要点：</strong>复杂多层架构图使用 <strong>Tailwind 组件化</strong>比 Mermaid 更适合——通过 <code>flex</code> + 固定宽度的左侧标签栏 + <code>flex-1</code> 右侧内容区，可保证四层<strong>等宽对齐</strong>；内部使用 <code>grid grid-cols-N</code> 进行网格布局，<code>border-dashed</code> 表达子模块边界，<code>writing-mode:vertical-rl</code> 实现左侧纵向层名。
+                </div>
+            </div>
+
+            <!-- 2.4 UI设计业务流程图案例 -->
+            <div class="mt-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">2.4 业务流程图案例（UI设计协作流程）</h3>
+                <p class="text-gray-600 mb-4">
+                    以下是一个典型的<strong>含多重判断分支与回流</strong>的业务流程图，展示UI设计师从原型评审到最终复盘的完整工作流，包含两次确认决策与对应的回退闭环。
+                </p>
+                <div class="border rounded-lg p-4 bg-gray-50 overflow-x-auto">
+                    <pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'fontSize':'14px'}}}%%
+flowchart TD
+    Start([参与原型评审]) --> Confirm{确定原型}
+    Confirm --> Demo["UI设计标志性<br/>页面demo"]
+    Demo --> NeedCheck{"需求方<br/>及产品"}
+    NeedCheck -- 不确定 --> AdjustStyle[调整页面风格]
+    AdjustStyle -- 调整完成 --> NeedCheck
+    NeedCheck -- 确定 --> MainUI[主体UI设计]
+    MainUI --> UICheck{"确认UI<br/>主体页面"}
+    UICheck -- 不确定 --> AdjustUI[调整UI设计]
+    AdjustUI -- 调整完成 --> UICheck
+    UICheck -- 确定 --> ExportPixso["输出切图、标注<br/>等到pixso"]
+    ExportPixso --> Iconfont["整理字体图标<br/>输出到iconfont"]
+    Iconfont --> CommDev["保持沟通及协助<br/>前端进行开发"]
+    CommDev --> UpdateLib["更新组件库、迭代<br/>相应设计规范"]
+    UpdateLib --> FrontDev[前端完成初版开发]
+    FrontDev --> Review[UI走查界面还原度]
+    Review --> Verify[验证实施发布的结果]
+    Verify --> End(["总结复盘、<br/>文档整理"])
+
+    classDef startEnd fill:#c7d2fe,stroke:#4338ca,stroke-width:2px,color:#1e1b4b
+    classDef decision fill:#e9d5ff,stroke:#7e22ce,stroke-width:2px,color:#581c87
+    classDef process fill:#ddd6fe,stroke:#6d28d9,stroke-width:1.5px,color:#3b0764
+
+    class Start,End startEnd
+    class Confirm,NeedCheck,UICheck decision
+    class Demo,AdjustStyle,MainUI,AdjustUI,ExportPixso,Iconfont,CommDev,UpdateLib,FrontDev,Review,Verify process
+                    </pre>
+                </div>
+                <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-800">
+                    <strong>💡 案例要点：</strong>菱形 <code>{}</code> 表示判断节点，圆角 <code>([])</code> 表示开始/结束，矩形 <code>[]</code> 表示常规步骤；<code>--&nbsp;文字&nbsp;--&gt;</code> 在边上添加判断条件标签；通过 <code>classDef</code> 区分起止节点、判断节点和处理节点的视觉权重。
+                </div>
+            </div>
+        </section>
+
+        <!-- 代码示例 -->
+        <section class="mb-12 bg-white rounded-xl shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">三、代码块示例</h2>
+            <p class="text-gray-600 mb-6">
+                在AI文档中嵌入高质量的代码块，需要同时满足：<strong>语法高亮</strong>、<strong>一键复制</strong>、<strong>语言标识</strong>、<strong>可滚动</strong>。下面是多语言代码块的完整示例，基于 Prism.js 实现语法高亮。
+            </p>
+
+            <!-- 3.1 JavaScript 示例 -->
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">3.1 JavaScript / TypeScript</h3>
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>typescript</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-typescript"><code class="language-typescript">// 基于 React Hooks 的 AI 文档生成器
+import { useState, useCallback } from 'react';
+
+interface DocConfig {
+  title: string;
+  model: 'gpt-4o' | 'claude-opus' | 'gemini';
+  includeMermaid?: boolean;
+}
+
+export function useDocGenerator(config: DocConfig) {
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState&lt;string&gt;('');
+
+  const generate = useCallback(async (prompt: string) =&gt; {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...config, prompt }),
+      });
+      const data = await res.json();
+      setContent(data.html);
+    } finally {
+      setLoading(false);
+    }
+  }, [config]);
+
+  return { loading, content, generate };
+}</code></pre>
+            </div>
+
+            <!-- 3.2 Python 示例 -->
+            <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">3.2 Python</h3>
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>python</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-python"><code class="language-python">"""
+AI 文档生成服务的 FastAPI 实现
+"""
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from typing import Literal, Optional
+import openai
+
+app = FastAPI(title="AI Doc Generator")
+
+class GenerateRequest(BaseModel):
+    prompt: str = Field(..., min_length=10, description="文档生成提示词")
+    model: Literal["gpt-4o", "claude-opus"] = "gpt-4o"
+    include_mermaid: bool = True
+    temperature: Optional[float] = 0.7
+
+@app.post("/api/generate")
+async def generate_doc(req: GenerateRequest) -&gt; dict:
+    """调用大模型生成完整的 HTML 文档"""
+    try:
+        response = await openai.ChatCompletion.acreate(
+            model=req.model,
+            messages=[
+                {"role": "system", "content": _build_system_prompt(req)},
+                {"role": "user", "content": req.prompt},
+            ],
+            temperature=req.temperature,
+        )
+        return {"html": response.choices[0].message.content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def _build_system_prompt(req: GenerateRequest) -&gt; str:
+    base = "你是一个专业的单文件 HTML 文档生成器。"
+    if req.include_mermaid:
+        base += "请使用 Mermaid 语法绘制架构图。"
+    return base</code></pre>
+            </div>
+
+            <!-- 3.3 Java 示例 -->
+            <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">3.3 Java (Spring Boot)</h3>
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>java</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-java"><code class="language-java">package com.example.aidoc.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * AI 文档生成控制器
+ */
+@RestController
+@RequestMapping("/api/v1/docs")
+@RequiredArgsConstructor
+public class DocGenerationController {
+
+    private final DocGenerationService docService;
+
+    @PostMapping("/generate")
+    public ResponseEntity&lt;DocResponse&gt; generate(@Valid @RequestBody DocRequest request) {
+        log.info("Received generation request: model={}", request.getModel());
+        DocResponse response = docService.generateDocument(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{docId}")
+    public DocResponse getById(@PathVariable Long docId) {
+        return docService.findById(docId)
+            .orElseThrow(() -&gt; new ResourceNotFoundException("Doc not found: " + docId));
+    }
+}</code></pre>
+            </div>
+
+            <!-- 3.4 SQL 示例 -->
+            <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">3.4 SQL</h3>
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>sql</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-sql"><code class="language-sql">-- 创建 AI 文档表与索引
+CREATE TABLE ai_documents (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    title       VARCHAR(255) NOT NULL COMMENT '文档标题',
+    model       VARCHAR(64)  NOT NULL COMMENT '生成模型',
+    html_body   MEDIUMTEXT   NOT NULL COMMENT '文档HTML内容',
+    token_count INT          DEFAULT 0,
+    created_by  BIGINT       NOT NULL,
+    created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_creator_time (created_by, created_at DESC),
+    FULLTEXT KEY ft_title (title)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI文档主表';
+
+-- 查询某用户最近 7 天生成的文档Top10
+SELECT id, title, model, token_count, created_at
+FROM   ai_documents
+WHERE  created_by = ?
+  AND  created_at &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY)
+ORDER  BY created_at DESC
+LIMIT  10;</code></pre>
+            </div>
+
+            <!-- 3.5 Bash / Shell -->
+            <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">3.5 Bash / Shell</h3>
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>bash</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-bash"><code class="language-bash">#!/usr/bin/env bash
+# 一键部署 AI 文档生成服务
+set -euo pipefail
+
+APP_NAME="ai-doc"
+IMAGE="registry.example.com/${APP_NAME}:latest"
+
+echo "📦 构建镜像..."
+docker build -t "${IMAGE}" .
+
+echo "🚀 推送镜像..."
+docker push "${IMAGE}"
+
+echo "♻️  重启服务..."
+kubectl rollout restart deployment/${APP_NAME} -n production
+kubectl rollout status deployment/${APP_NAME} -n production --timeout=120s
+
+echo "✅ 部署完成！"</code></pre>
+            </div>
+
+            <!-- 3.6 JSON / YAML 配置 -->
+            <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">3.6 JSON 配置示例</h3>
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>json</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-json"><code class="language-json">{
+  "app": {
+    "name": "ai-doc-generator",
+    "version": "2.0.0",
+    "models": [
+      { "id": "gpt-4o",       "maxTokens": 128000, "enabled": true  },
+      { "id": "claude-opus",  "maxTokens": 200000, "enabled": true  },
+      { "id": "gemini-1.5",   "maxTokens": 1000000, "enabled": false }
+    ],
+    "features": {
+      "mermaid":  true,
+      "tailwind": true,
+      "export":   ["pdf", "docx", "html"]
+    }
+  }
+}</code></pre>
+            </div>
+
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p class="text-blue-800 text-sm">
+                    <strong>💡 使用要点：</strong>使用 <code>&lt;pre class="language-xxx"&gt;&lt;code class="language-xxx"&gt;</code> 包裹代码即可获得 Prism.js 语法高亮；外层包裹 <code>.code-block-wrapper</code> 提供语言标签与复制按钮。反尖括号、尖括号等特殊字符需要 HTML 转义（如 <code>&amp;lt;</code>、<code>&amp;gt;</code>）。
+                </p>
+            </div>
+        </section>
+
+        <!-- 优势对比 -->
+        <section class="mb-12 bg-white rounded-xl shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">四、与传统方案对比</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold">对比维度</th>
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold">本方案</th>
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold">传统Markdown</th>
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Word+Visio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-200 px-4 py-3">AI生成效率</td>
+                            <td class="border border-gray-200 px-4 py-3 text-success font-semibold">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★★☆☆☆</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-4 py-3">内容整合度</td>
+                            <td class="border border-gray-200 px-4 py-3 text-success font-semibold">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★★☆☆☆</td>
+                            <td class="border border-gray-200 px-4 py-3">★★★☆☆</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-4 py-3">交互能力</td>
+                            <td class="border border-gray-200 px-4 py-3 text-success font-semibold">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★☆☆☆☆</td>
+                            <td class="border border-gray-200 px-4 py-3">★★☆☆☆</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-4 py-3">版本控制</td>
+                            <td class="border border-gray-200 px-4 py-3 text-success font-semibold">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★☆☆☆☆</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-4 py-3">跨平台兼容性</td>
+                            <td class="border border-gray-200 px-4 py-3 text-success font-semibold">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★★★★☆</td>
+                            <td class="border border-gray-200 px-4 py-3">★★☆☆☆</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-4 py-3">代码可复用性</td>
+                            <td class="border border-gray-200 px-4 py-3 text-success font-semibold">★★★★★</td>
+                            <td class="border border-gray-200 px-4 py-3">★★☆☆☆</td>
+                            <td class="border border-gray-200 px-4 py-3">★☆☆☆☆</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-4 py-3">综合得分</td>
+                            <td class="border border-gray-200 px-4 py-3 text-success font-semibold">9.8/10</td>
+                            <td class="border border-gray-200 px-4 py-3">6.8/10</td>
+                            <td class="border border-gray-200 px-4 py-3">3.5/10</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 界面原型示例 -->
+        <section class="mb-12 bg-white rounded-xl shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">五、界面原型示例</h2>
+            <p class="text-gray-600 mb-6">
+                以下是一个AI文档生成工具的界面原型，完全使用Tailwind CSS实现，支持真实的交互功能。
+            </p>
+            
+            <!-- 原型容器 -->
+            <div class="border rounded-lg overflow-hidden shadow-lg">
+                <!-- 原型标题栏 -->
+                <div class="bg-gray-800 text-white px-4 py-2 flex items-center">
+                    <div class="flex space-x-2 mr-4">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <span class="text-sm">AI文档生成工具 - 原型演示</span>
+                </div>
+                
+                <!-- 原型内容区 -->
+                <div class="flex h-[500px]">
+                    <!-- 侧边栏 -->
+                    <div class="w-64 bg-gray-50 border-r flex flex-col">
+                        <div class="p-4 border-b">
+                            <h3 class="font-semibold text-gray-800">文档模板</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-2">
+                            <div class="p-2 rounded bg-primary/10 text-primary font-medium mb-1 cursor-pointer">
+                                技术方案文档
+                            </div>
+                            <div class="p-2 rounded hover:bg-gray-100 mb-1 cursor-pointer">
+                                产品需求文档
+                            </div>
+                            <div class="p-2 rounded hover:bg-gray-100 mb-1 cursor-pointer">
+                                架构设计文档
+                            </div>
+                            <div class="p-2 rounded hover:bg-gray-100 mb-1 cursor-pointer">
+                                API接口文档
+                            </div>
+                            <div class="p-2 rounded hover:bg-gray-100 mb-1 cursor-pointer">
+                                测试报告
+                            </div>
+                        </div>
+                        <div class="p-4 border-t">
+                            <button class="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition">
+                                + 新建文档
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 主编辑区 -->
+                    <div class="flex-1 flex flex-col">
+                        <!-- 工具栏 -->
+                        <div class="border-b p-3 flex items-center justify-between">
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition">
+                                    保存
+                                </button>
+                                <button class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition">
+                                    生成
+                                </button>
+                                <button class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition">
+                                    预览
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-500">模型：</span>
+                                <select class="border rounded px-2 py-1 text-sm">
+                                    <option>GPT-4o</option>
+                                    <option>Claude Opus</option>
+                                    <option>Gemini Advanced</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 编辑区 -->
+                        <div class="flex-1 flex">
+                            <!-- 输入区 -->
+                            <div class="w-1/2 border-r flex flex-col">
+                                <div class="p-3 border-b bg-gray-50">
+                                    <h4 class="font-medium text-gray-700">需求描述</h4>
+                                </div>
+                                <div class="flex-1 p-4">
+                                    <textarea 
+                                        class="w-full h-full border rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        placeholder="请用自然语言描述你需要生成的文档内容..."
+                                    >请生成一个电商平台的技术方案文档，包含以下内容：
+1. 系统整体架构
+2. 核心模块设计
+3. 数据库设计
+4. 部署方案
+5. 性能优化策略
+
+要求：
+- 使用Mermaid绘制架构图
+- 包含一个用户下单流程的界面原型
+- 文档结构清晰，逻辑严谨</textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- 预览区 -->
+                            <div class="w-1/2 flex flex-col">
+                                <div class="p-3 border-b bg-gray-50">
+                                    <h4 class="font-medium text-gray-700">生成预览</h4>
+                                </div>
+                                <div class="flex-1 p-4 overflow-y-auto bg-white">
+                                    <div class="animate-pulse">
+                                        <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-5/6 mb-6"></div>
+                                        <div class="h-5 bg-gray-200 rounded w-1/2 mb-4"></div>
+                                        <div class="h-32 bg-gray-200 rounded mb-6"></div>
+                                        <div class="h-5 bg-gray-200 rounded w-1/2 mb-4"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-4/5"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p class="text-blue-800">
+                    <strong>💡 提示：</strong> 这个原型是完全可交互的，你可以点击按钮、输入文本、选择下拉菜单。前端工程师可以直接复制这段代码到项目中使用。
+                </p>
+            </div>
+        </section>
+
+        <!-- 快速开始指南 -->
+        <section class="mb-12 bg-white rounded-xl shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">六、快速开始指南</h2>
+            <div class="prose-custom">
+                <h3>6.1 基本使用方法</h3>
+                <ol>
+                    <li>复制本文档的完整HTML代码</li>
+                    <li>保存为一个扩展名为<code>.html</code>的文件</li>
+                    <li>用任何现代浏览器打开该文件</li>
+                    <li>根据你的需求修改内容</li>
+                </ol>
+                
+                <h3>6.2 AI生成提示词模板</h3>
+                <div class="bg-gray-50 border rounded-lg p-4 my-4">
+                    <pre class="text-sm overflow-x-auto">请生成一个完整的单文件HTML文档，包含以下内容：
+
+1. 文档标题：[你的文档标题]
+2. 文档内容：[详细描述文档的各个章节和内容]
+3. 架构设计：[详细描述系统架构，包括主要组件和它们之间的关系]
+4. 界面原型：[详细描述需要生成的界面原型，包括功能和布局]
+
+技术要求：
+- 使用Tailwind CSS v4 CDN进行样式设计
+- 使用Mermaid v11 CDN渲染架构图
+- 所有代码必须在一个HTML文件中，不依赖任何外部资源
+- 文档排版要美观，有合适的间距和字体大小
+- 架构图要使用不同颜色区分不同类型的组件
+- 界面原型要实现完整的交互逻辑
+- 使用响应式设计，适配不同屏幕尺寸
+
+输出要求：
+- 只输出完整的HTML代码，不要任何额外的解释
+- 确保代码可以直接在浏览器中打开并正常运行
+- 所有图片使用https://picsum.photos/占位</pre>
+                </div>
+                
+                <h3>6.3 最佳实践</h3>
+                <ul>
+                    <li>使用<code>&lt;details&gt;</code>标签折叠不重要的内容，降低信息密度</li>
+                    <li>为Mermaid图表添加适当的颜色和样式，提高可读性</li>
+                    <li>将原型放在单独的容器中，与文档内容区分开</li>
+                    <li>使用Git进行版本控制，记录所有修改历史</li>
+                    <li>建立团队共享的组件库和模板库，提高生成效率</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 常见问题 -->
+        <section class="bg-white rounded-xl shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">七、常见问题</h2>
+            
+            <div class="space-y-4">
+                <details class="border rounded-lg">
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50">
+                        这个方案需要安装任何软件吗？
+                    </summary>
+                    <div class="p-4 pt-0 border-t">
+                        <p class="text-gray-600">
+                            不需要。所有依赖都通过CDN引入，你只需要一个文本编辑器和一个现代浏览器即可使用。
+                        </p>
+                    </div>
+                </details>
+                
+                <details class="border rounded-lg">
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50">
+                        离线情况下可以使用吗？
+                    </summary>
+                    <div class="p-4 pt-0 border-t">
+                        <p class="text-gray-600">
+                            可以。你只需要将Tailwind CSS和Mermaid的CDN文件下载到本地，然后修改HTML中的引用路径即可。
+                        </p>
+                    </div>
+                </details>
+                
+                <details class="border rounded-lg">
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50">
+                        如何导出为PDF或Word文档？
+                    </summary>
+                    <div class="p-4 pt-0 border-t">
+                        <p class="text-gray-600">
+                            导出PDF可以直接使用浏览器的打印功能（Ctrl+P），选择"另存为PDF"。导出Word可以使用Pandoc工具，或者使用浏览器的"另存为"功能保存为HTML后用Word打开。
+                        </p>
+                    </div>
+                </details>
+                
+                <details class="border rounded-lg">
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50">
+                        这个方案适合团队协作吗？
+                    </summary>
+                    <div class="p-4 pt-0 border-t">
+                        <p class="text-gray-600">
+                            非常适合。HTML是纯文本格式，可以完美支持Git版本控制，团队成员可以同时编辑不同部分，并且可以清晰地看到每次修改的差异。
+                        </p>
+                    </div>
+                </details>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-gray-500 text-sm">
+                © 2026 AI文档格式最优解 | 基于HTML+Mermaid+Tailwind构建
+            </p>
+        </div>
+    </footer>
+
+    <!-- Mermaid初始化 -->
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'neutral',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                actorMargin: 50
+            }
+        });
+        
+        // 简单的原型交互演示
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.querySelector('button:contains("生成")');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', function() {
+                    alert('AI正在生成文档...\n\n在实际应用中，这里会调用大模型API生成内容并更新预览区。');
+                });
+            }
+        });
+
+        // 代码块一键复制
+        function copyCode(btn) {
+            const wrapper = btn.closest('.code-block-wrapper');
+            const codeEl = wrapper.querySelector('pre code');
+            if (!codeEl) return;
+            const text = codeEl.innerText;
+            const done = () => {
+                const original = btn.textContent;
+                btn.textContent = '已复制 ✓';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.classList.remove('copied');
+                }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+            } else {
+                fallbackCopy(text, done);
+            }
+        }
+
+        function fallbackCopy(text, done) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+
+        // 导出 PDF：调用浏览器原生打印对话框，用户选择“另存为PDF”即可
+        function exportToPDF() {
+            const btn = document.getElementById('exportPdfBtn');
+            const originalText = btn ? btn.textContent : '';
+            if (btn) {
+                btn.textContent = '⏳ 准备中...';
+                btn.disabled = true;
+            }
+            // 等待 Mermaid / Prism / 字体等资源渲染完成
+            const ready = (document.fonts && document.fonts.ready) || Promise.resolve();
+            ready.then(() => new Promise(r => setTimeout(r, 300))).then(() => {
+                if (btn) {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+                window.print();
+            });
+        }
+
+        // 快捷键：Ctrl/Cmd + P 也会走 print CSS，原生支持
+        window.addEventListener('beforeprint', () => {
+            // 预留钩子：如需在打印前调整微调可在此增加
+        });
+    </script>
+</body>
+</html>
