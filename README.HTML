@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 年了，你还让 AI 用 Markdown 写技术文档？</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mermaid v11 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <!-- Prism.js 代码高亮 -->
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0084ff',
+                        secondary: '#8b5cf6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        zhihu: '#0066ff',
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .prose-zhihu { color: #1a1a1a; line-height: 1.9; font-size: 16px; }
+            .prose-zhihu p { margin: 1.1rem 0; }
+            .prose-zhihu strong { color: #0066ff; font-weight: 600; }
+            .prose-zhihu ul { margin: 1rem 0; padding-left: 1.5rem; list-style: disc; }
+            .prose-zhihu li { margin: 0.4rem 0; }
+            .prose-zhihu blockquote {
+                border-left: 4px solid #0066ff;
+                background: #f6f8fa;
+                padding: 0.8rem 1.2rem;
+                margin: 1.2rem 0;
+                color: #444;
+                font-style: italic;
+            }
+            .prose-zhihu h3 { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; margin: 1.6rem 0 0.8rem; }
+            .quote-line {
+                display: block;
+                font-size: 1.05rem;
+                font-weight: 600;
+                color: #0066ff;
+                border-left: 3px solid #0066ff;
+                padding: 0.2rem 0 0.2rem 0.9rem;
+                margin: 1rem 0;
+                background: linear-gradient(90deg, rgba(0,102,255,0.06) 0%, transparent 100%);
+            }
+            .ascii-art {
+                background: #1e293b;
+                color: #94a3b8;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                padding: 1rem;
+                border-radius: 0.5rem;
+                font-size: 0.85rem;
+                line-height: 1.4;
+                white-space: pre;
+                overflow-x: auto;
+            }
+            .raw-mermaid {
+                background: #f3f4f6;
+                color: #6b7280;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                padding: 1rem;
+                border-radius: 0.5rem;
+                font-size: 0.85rem;
+                line-height: 1.5;
+                white-space: pre;
+                overflow-x: auto;
+                border: 1px dashed #d1d5db;
+            }
+            .code-block-wrapper {
+                position: relative; border-radius: 0.5rem; overflow: hidden;
+                margin: 1rem 0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            }
+            .code-block-header {
+                display: flex; align-items: center; justify-content: space-between;
+                background-color: #1e293b; color: #cbd5e1;
+                padding: 0.5rem 1rem; font-size: 0.85rem; border-bottom: 1px solid #334155;
+            }
+            .code-block-header .lang-tag {
+                display: inline-flex; align-items: center; gap: 0.5rem;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            }
+            .code-block-header .lang-dot {
+                width: 0.5rem; height: 0.5rem; border-radius: 9999px; background-color: #38bdf8;
+            }
+            .code-copy-btn {
+                background: transparent; border: 1px solid #475569; color: #cbd5e1;
+                padding: 0.15rem 0.6rem; border-radius: 0.375rem; font-size: 0.75rem;
+                cursor: pointer; transition: all 0.15s;
+            }
+            .code-copy-btn:hover { background-color: #334155; color: #fff; }
+            .code-copy-btn.copied { background-color: #10b981; border-color: #10b981; color: #fff; }
+            .code-block-wrapper pre[class*="language-"] {
+                margin: 0; border-radius: 0; font-size: 0.875rem; line-height: 1.55;
+                max-height: 480px; overflow: auto;
+            }
+            .mermaid { text-align: center; }
+            .mermaid svg { display: block; margin: 0 auto; }
+            .pillar-card { transition: all 0.25s; }
+            .pillar-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+            .vs-bad { background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); }
+            .vs-good { background: linear-gradient(135deg, #d1fae5 0%, #dbeafe 100%); }
+        }
+    </style>
+    <style media="print">
+        @page { size: A4; margin: 12mm 10mm; }
+        html, body { background: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        nav, footer, #exportPdfBtn, .no-print { display: none !important; }
+        main { max-width: 100% !important; padding: 0 !important; }
+        section { box-shadow: none !important; border: 1px solid #e5e7eb !important; page-break-inside: avoid; break-inside: avoid; margin-bottom: 1rem !important; }
+        h1, h2, h3 { page-break-after: avoid; break-after: avoid; }
+        pre, table, .mermaid, .code-block-wrapper, .ascii-art, .raw-mermaid { page-break-inside: avoid; break-inside: avoid; }
+        a { color: inherit; text-decoration: none; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-zhihu text-white flex items-center justify-center font-bold">知</div>
+                    <h1 class="text-lg font-bold text-gray-900">知乎科普 · 程序员的文档革命</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="hidden sm:inline text-sm text-gray-500">2026-05-20</span>
+                    <button class="bg-zhihu text-white px-3 py-1.5 rounded-lg hover:opacity-90 transition text-sm" id="exportPdfBtn" onclick="exportToPDF()">
+                        📄 保存PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- 钩子标题 -->
+        <div class="mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-4">
+                2026 年了，你还让 AI 用 Markdown 写技术文档？
+            </h1>
+            <p class="text-lg text-gray-600 mb-6">
+                ——让 AI 用 ASCII 字符画架构图，可能是这个时代最大的程序员行为艺术
+            </p>
+            <!-- 作者人设条 -->
+            <div class="flex items-center space-x-3 py-3 border-y border-gray-200">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">码</div>
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-900">码农老王 <span class="text-xs text-zhihu ml-1">已认证 · 资深架构师</span></div>
+                    <div class="text-sm text-gray-500">十年大厂经验 · 写过 50+ 份技术方案 · 被 ASCII 架构图笑死的男人</div>
+                </div>
+                <button class="bg-zhihu text-white px-4 py-1.5 rounded-full text-sm">+ 关注</button>
+            </div>
+        </div>
+
+        <!-- 开篇 · 痛点 -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <div class="prose-zhihu">
+                <p>
+                    先讲一件最近让我血压升高的事。
+                </p>
+                <p>
+                    上周让 ChatGPT 帮我写一份《订单系统重构技术方案》，30 秒后它吐了一大段 Markdown 给我。整体看起来挺像样，可拉到「整体架构」那一节，我血压瞬间飙起来——
+                </p>
+                <p>
+                    <strong>它给我画了这么一张「ASCII 架构图」</strong>：
+                </p>
+                <pre class="ascii-art">+----------------+       +-----------------+       +----------------+
+|   Web 前端     | ----&gt; |   API 网关       | ----&gt; |   订单服务     |
++----------------+       +-----------------+       +----------------+
+                              |        |
+                              v        v
+                        +---------+ +---------+
+                        | 用户中心 | | 商品中心 |
+                        +---------+ +---------+</pre>
+                <p>
+                    我盯着这堆加号横线看了半分钟，差点把咖啡喷在屏幕上。<strong>2026 年了，AI 还在用 1990 年代 BBS 论坛风的字符画给我画架构图。</strong>
+                </p>
+                <span class="quote-line">把 ASCII 架构图发给客户，对方会以为你穿越了。</span>
+                <p>
+                    我心想算了，让它换 Mermaid 总行了吧？于是补一句：「请用 Mermaid 重画。」AI 乖乖换了一段 <code>graph TD</code> 给我。
+                </p>
+                <p>
+                    我一拷贝到客户的飞书文档里——<strong>它原封不动地把 Mermaid 源码当成普通文字渲染了出来</strong>，长这样：
+                </p>
+                <pre class="raw-mermaid">graph TD
+    A[Web前端] --&gt; B[API网关]
+    B --&gt; C[订单服务]
+    B --&gt; D[用户中心]
+    B --&gt; E[商品中心]</pre>
+                <p>
+                    客户那边发来一个微笑表情：「老王，这个图我看不太懂…」
+                </p>
+                <p>
+                    最后一击是<strong>界面原型</strong>。我让 AI 设计一个「订单管理后台的列表页」，它给我返回了——
+                </p>
+                <blockquote>
+                    左侧为侧边导航栏（包含「首页」「订单」「商品」「设置」四项），顶部为搜索栏与用户头像，中间区域为订单列表表格，包含订单号、客户、金额、状态、操作五列…
+                </blockquote>
+                <p>
+                    一段干巴巴的文字描述。<strong>我读完只想问：图呢？</strong>
+                </p>
+                <span class="quote-line">Markdown 不是不行，是它根本扛不动「技术文档」这三个字。</span>
+                <p>
+                    那一刻我突然想通了：错的不是 AI，错的是我们让 AI 用 Markdown 这个 1991 年发明的纯文本格式，去承载 2026 年的「图文 + 图表 + 原型 + 高亮代码」。
+                </p>
+                <p>
+                    这就是今天要聊的事——<strong>该让 AI 换载体了</strong>。
+                </p>
+            </div>
+        </section>
+
+        <!-- 第一节 · 三大灾难现场 -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">一、AI + Markdown 的三大灾难现场</h2>
+            <p class="text-gray-700 mb-6">把刚才那场翻车归类一下，AI 用 Markdown 写技术文档时，必然会撞上这三堵墙：</p>
+
+            <!-- 灾难 1：ASCII 架构图 -->
+            <div class="border border-red-200 rounded-xl mb-5 overflow-hidden">
+                <div class="bg-red-50 p-4 border-b border-red-200">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center font-bold">1</span>
+                        <h3 class="font-bold text-red-800 text-lg">灾难一：ASCII 字符画架构图</h3>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <p class="text-gray-700 mb-3">
+                        Markdown 没有原生画图能力，AI 又被规定只能输出纯文本，结果就是——它会用 <code>+</code> <code>-</code> <code>|</code> 给你硬画。
+                    </p>
+                    <pre class="ascii-art mb-3">+--------+      +--------+      +--------+
+| Client | ---&gt;| Server | ---&gt;|   DB   |
++--------+      +--------+      +--------+</pre>
+                    <p class="text-gray-700">
+                        <strong class="text-red-700">问题</strong>：等宽字体下勉强能看，<strong>非等宽字体或导出 PDF 后线条直接错位</strong>；4 层以上的层级关系画不出来；多分支汇合彻底失控；客户拿到只会反问"这是不是乱码？"
+                    </p>
+                </div>
+            </div>
+
+            <!-- 灾难 2：Mermaid 源码 -->
+            <div class="border border-amber-200 rounded-xl mb-5 overflow-hidden">
+                <div class="bg-amber-50 p-4 border-b border-amber-200">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold">2</span>
+                        <h3 class="font-bold text-amber-800 text-lg">灾难二：Mermaid 在大多数地方就是一坨源码</h3>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <p class="text-gray-700 mb-3">
+                        AI 学聪明了，给你写 Mermaid。可问题是——<strong>Mermaid 不是 Markdown 的标准能力，只在 GitHub / GitLab / Typora 等少数地方会渲染</strong>。你把它复制到下面这些地方，立刻原形毕露：
+                    </p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">飞书文档 ❌</div>
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">企业微信 ❌</div>
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">钉钉 ❌</div>
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">微信公众号 ❌</div>
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">Word ❌</div>
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">语雀（默认）❌</div>
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">大多数邮件 ❌</div>
+                        <div class="px-3 py-2 bg-gray-100 rounded text-center text-xs text-gray-700">导出 PDF ❌</div>
+                    </div>
+                    <p class="text-gray-700">
+                        <strong class="text-amber-700">问题</strong>：客户、产品经理、甲方爸爸 99% 都不在 GitHub 里看文档。你交付的 <code>graph TD</code> 在他们眼里就是一段长得像代码的废话。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 灾难 3：原型靠脑补 -->
+            <div class="border border-purple-200 rounded-xl mb-5 overflow-hidden">
+                <div class="bg-purple-50 p-4 border-b border-purple-200">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold">3</span>
+                        <h3 class="font-bold text-purple-800 text-lg">灾难三：界面原型？MD 根本装不下</h3>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <p class="text-gray-700 mb-3">
+                        Markdown 的语法集里<strong>压根没有「布局」这个概念</strong>——没 flex、没 grid、没绝对定位、没颜色控制、没交互。AI 想给你画原型只剩两条路：
+                    </p>
+                    <ul class="list-disc pl-6 space-y-1 text-gray-700 mb-3">
+                        <li><strong>路 A：用文字描述</strong>——「左侧导航栏，右侧表格…」客户全靠脑补，沟通成本爆炸。</li>
+                        <li><strong>路 B：让你打开 Figma</strong>——AI 写完 MD，你还要手动画图，那 AI 给你省的时间又赔回去了。</li>
+                    </ul>
+                    <p class="text-gray-700">
+                        <strong class="text-purple-700">问题</strong>：技术方案最贵的部分往往就是「让产品/客户提前看到长什么样」。这件事 Markdown 一点忙都帮不上。
+                    </p>
+                </div>
+            </div>
+
+            <span class="quote-line">三堵墙的根因只有一句话：Markdown 是为「读」设计的，不是为「展示技术系统」设计的。</span>
+        </section>
+
+        <!-- 第二节 · 三位一体是什么 -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">二、解法：让 AI 直接吐 HTML</h2>
+            <p class="text-gray-700 mb-4">
+                既然 Markdown 三堵墙都过不去，那干脆换一个能装下所有内容的载体——<strong>单文件 HTML</strong>。一句话总结叫「三位一体」：
+            </p>
+
+            <!-- 三柱图（Tailwind HTML） -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="pillar-card bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5">
+                    <div class="text-4xl mb-3">📐</div>
+                    <div class="font-bold text-blue-900 text-lg mb-2">第一位：HTML 容器</div>
+                    <p class="text-sm text-blue-800 mb-3">单文件 .html 装下所有内容，浏览器双击就能看，不依赖任何编辑器。</p>
+                    <div class="text-xs text-blue-700 font-mono bg-white/60 rounded p-2">
+                        &lt;!DOCTYPE html&gt;<br>
+                        &lt;html&gt;...&lt;/html&gt;
+                    </div>
+                </div>
+                <div class="pillar-card bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-xl p-5">
+                    <div class="text-4xl mb-3">📊</div>
+                    <div class="font-bold text-emerald-900 text-lg mb-2">第二位：Mermaid CDN</div>
+                    <p class="text-sm text-emerald-800 mb-3">本地直接渲染成 SVG 图形，<strong>不再依赖外部平台</strong>。打开 .html 就是图，不是源码。</p>
+                    <div class="text-xs text-emerald-700 font-mono bg-white/60 rounded p-2">
+                        &lt;pre class="mermaid"&gt;<br>
+                        &nbsp;&nbsp;graph TD ...
+                    </div>
+                </div>
+                <div class="pillar-card bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-xl p-5">
+                    <div class="text-4xl mb-3">🎨</div>
+                    <div class="font-bold text-purple-900 text-lg mb-2">第三位：Tailwind CSS</div>
+                    <p class="text-sm text-purple-800 mb-3">CDN 引入，AI 用类名直接写出<strong>真实可点击的界面原型</strong>，不用再开 Figma。</p>
+                    <div class="text-xs text-purple-700 font-mono bg-white/60 rounded p-2">
+                        class="flex<br>
+                        bg-white shadow-lg"
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">2.1 整体架构图（注意，这个图是真渲染的）</h3>
+            <p class="text-gray-700 mb-3">下面这张图你<strong>不需要装任何插件</strong>，浏览器打开就是 SVG：</p>
+            <div class="border rounded-lg p-4 bg-gray-50">
+                <pre class="mermaid">
+graph LR
+    subgraph 你["💻 你 / AI"]
+        U[自然语言需求]
+    end
+    subgraph 容器["📄 单文件 HTML"]
+        direction TB
+        T[Tailwind<br/>富文本+原型]
+        M[Mermaid<br/>架构图/流程图]
+        P[Prism.js<br/>代码高亮]
+    end
+    subgraph 输出["🚀 交付"]
+        B[浏览器双击预览]
+        D[一键 PDF]
+        G[Git diff]
+    end
+    U --> T
+    U --> M
+    U --> P
+    T --> B
+    M --> B
+    P --> B
+    B --> D
+    B --> G
+
+    classDef container fill:#dbeafe,stroke:#1e40af,stroke-width:2px
+    classDef tool fill:#ede9fe,stroke:#6d28d9
+    classDef out fill:#d1fae5,stroke:#047857
+    class 容器 container
+    class T,M,P tool
+    class B,D,G out
+                </pre>
+            </div>
+            <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
+                <strong>💡 重点：</strong>所有内容都装在一个 .html 文件里。<strong>客户、产品、甲方双击就能看，不用 GitHub、不用 VSCode、不用 Typora、不用 Figma。</strong>
+            </div>
+        </section>
+
+        <!-- 第三节 · 同一份文档的三种命运 -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">三、同一份文档的三种命运</h2>
+            <p class="text-gray-700 mb-4">
+                同一份 AI 生成的内容，用不同载体交付出去，命运截然不同。下面这张流程图就是真实场景：
+            </p>
+            <div class="border rounded-lg p-4 bg-gray-50">
+                <pre class="mermaid">
+flowchart TD
+    Need([💬 你向 AI 提需求]) --> Choose{选用什么载体让 AI 输出?}
+    Choose -- Markdown --> MD[AI 生成 .md 文件]
+    Choose -- Word --> Word[AI 生成 .docx<br/>大概率失败]
+    Choose -- 三位一体 HTML --> HTML[AI 生成 .html 文件]
+
+    MD --> MDFate{交付时}
+    MDFate -- 客户用飞书/Word --> Fail1[❌ Mermaid 显示成源码<br/>ASCII 图错位<br/>原型靠脑补]
+    MDFate -- 自己用 GitHub --> Half[⚠️ 勉强可看<br/>但客户依然看不到]
+
+    Word --> Fail2[❌ AI 输出二进制能力差<br/>排版基本会崩]
+
+    HTML --> HFate{交付时}
+    HFate -- 双击打开 --> Win1[✅ 图、原型、代码全部正常]
+    HFate -- 一键打印 --> Win2[✅ PDF 排版完美]
+    HFate -- 提交 Git --> Win3[✅ 纯文本可 diff]
+
+    classDef start fill:#dbeafe,stroke:#1e40af,stroke-width:2px,color:#1e3a8a
+    classDef decision fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#78350f
+    classDef bad fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
+    classDef warn fill:#fef3c7,stroke:#a16207,color:#713f12
+    classDef good fill:#d1fae5,stroke:#047857,color:#064e3b
+    classDef neutral fill:#e0e7ff,stroke:#4338ca,color:#312e81
+
+    class Need start
+    class Choose,MDFate,HFate decision
+    class Fail1,Fail2 bad
+    class Half warn
+    class Win1,Win2,Win3 good
+    class MD,Word,HTML neutral
+                </pre>
+            </div>
+            <span class="quote-line">同样的 AI、同样的需求、同样的内容，载体一换，命运三分。</span>
+        </section>
+
+        <!-- 第四节 · 上手代码 -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">四、5 分钟实操：让 AI 换个吐法</h2>
+            <p class="text-gray-700 mb-4">
+                改造其实只有一个动作：<strong>修改你给 AI 的提示词</strong>。从「请生成一份 Markdown」改成下面这段：
+            </p>
+
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">4.1 给 AI 的新版提示词</h3>
+
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>markdown · prompt.md</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-markdown"><code class="language-markdown">请用「三位一体」格式生成一份**单文件 HTML** 技术文档。
+
+# 文档主题
+[填写你的主题，如：订单系统重构方案]
+
+# 必含章节
+1. 项目背景
+2. 整体架构图（用 &lt;pre class="mermaid"&gt; graph TD &lt;/pre&gt; 真渲染，禁止 ASCII）
+3. 核心模块时序图（Mermaid sequenceDiagram）
+4. 关键代码示例（Python，Prism.js 高亮）
+5. 上线流程图（Mermaid flowchart，含判断分支）
+6. 管理后台原型页（直接用 Tailwind class，要真实可视化）
+
+# 强制约束
+- 单 .html 文件，零本地依赖
+- Tailwind CSS v4 CDN + Mermaid v11 CDN + Prism.js 1.29 CDN
+- 禁止用 ASCII 字符画架构图
+- 内置 window.print() 函数支持一键导出 PDF
+- 配色蓝紫为主，符合企业风
+
+只输出 HTML 代码，不要任何解释。</code></pre>
+            </div>
+
+            <p class="text-gray-700 mt-4 mb-3">
+                把这段话扔给 GPT-4o / Claude，<strong>它会一次性吐一个 .html 文件给你</strong>。保存、双击、完事。
+            </p>
+
+            <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">4.2 最小可运行骨架</h3>
+            <p class="text-gray-700 mb-3">如果你想自己手写一份打底，下面这 18 行就够：</p>
+
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>html · minimal.html</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-markup"><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;我的第一份三位一体文档&lt;/title&gt;
+  &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+  &lt;script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body class="bg-gray-50 p-8"&gt;
+  &lt;h1 class="text-3xl font-bold mb-4"&gt;Hello, Trinity Doc&lt;/h1&gt;
+  &lt;p class="text-gray-600 mb-6"&gt;Tailwind 排版 + Mermaid 真渲染。&lt;/p&gt;
+  &lt;pre class="mermaid"&gt;
+    graph LR
+      A[需求] --&gt; B[AI 生成 HTML]
+      B --&gt; C[双击就能看]
+  &lt;/pre&gt;
+  &lt;script&gt;mermaid.initialize({ startOnLoad: true });&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+            </div>
+
+            <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">4.3 一键 PDF 的核心代码</h3>
+
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="lang-tag"><span class="lang-dot"></span>javascript · 一键 PDF</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+<pre class="language-javascript"><code class="language-javascript">// 等字体和图表渲染完成后，再调用浏览器原生打印
+function exportToPDF() {
+  const ready = document.fonts.ready || Promise.resolve();
+  ready.then(() => new Promise(r => setTimeout(r, 300)))
+       .then(() => window.print());
+}
+
+// 配套的 @media print CSS 会自动隐藏导航栏、避免图被分页切割
+// 你不用做任何额外操作，浏览器会弹出"另存为 PDF"对话框</code></pre>
+            </div>
+
+            <span class="quote-line">本文右上角的「保存PDF」就是这两行代码做的，去试试。</span>
+        </section>
+
+        <!-- 第五节 · 真实原型展示 -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">五、看个实物：原型直接嵌进文档</h2>
+            <p class="text-gray-700 mb-4">
+                还记得开头那个让 AI 画的「订单管理后台」吗？用 Markdown 描述一下午也讲不清的东西，HTML 一句 <code>flex</code> 就能直接<strong>显示给你看</strong>：
+            </p>
+
+            <div class="border rounded-lg overflow-hidden shadow-lg">
+                <div class="bg-gray-800 text-white px-4 py-2 flex items-center">
+                    <div class="flex space-x-2 mr-4">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <span class="text-sm">订单管理系统 - 原型演示</span>
+                </div>
+                <div class="flex h-[400px]">
+                    <aside class="w-48 bg-gray-50 border-r p-3 text-sm">
+                        <div class="font-semibold text-gray-700 mb-3">导航</div>
+                        <div class="space-y-1">
+                            <div class="px-2 py-1.5 rounded bg-zhihu/10 text-zhihu font-medium">📦 订单</div>
+                            <div class="px-2 py-1.5 rounded text-gray-600 hover:bg-gray-100 cursor-pointer">🏠 首页</div>
+                            <div class="px-2 py-1.5 rounded text-gray-600 hover:bg-gray-100 cursor-pointer">🛍️ 商品</div>
+                            <div class="px-2 py-1.5 rounded text-gray-600 hover:bg-gray-100 cursor-pointer">👤 用户</div>
+                            <div class="px-2 py-1.5 rounded text-gray-600 hover:bg-gray-100 cursor-pointer">⚙️ 设置</div>
+                        </div>
+                    </aside>
+                    <div class="flex-1 flex flex-col">
+                        <div class="border-b p-3 flex items-center justify-between">
+                            <input type="text" placeholder="搜索订单号 / 客户" class="border rounded-lg px-3 py-1.5 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-zhihu/40">
+                            <div class="flex items-center gap-2">
+                                <button class="bg-zhihu text-white px-3 py-1.5 rounded-lg text-sm">+ 新建订单</button>
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold">王</div>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 text-gray-600">
+                                    <tr>
+                                        <th class="text-left p-2 font-medium">订单号</th>
+                                        <th class="text-left p-2 font-medium">客户</th>
+                                        <th class="text-left p-2 font-medium">金额</th>
+                                        <th class="text-left p-2 font-medium">状态</th>
+                                        <th class="text-left p-2 font-medium">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-t hover:bg-gray-50">
+                                        <td class="p-2 font-mono text-xs">#20260518-001</td>
+                                        <td class="p-2">张先生</td>
+                                        <td class="p-2 font-semibold">¥ 2,380</td>
+                                        <td class="p-2"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs">已完成</span></td>
+                                        <td class="p-2 text-zhihu cursor-pointer">查看</td>
+                                    </tr>
+                                    <tr class="border-t hover:bg-gray-50">
+                                        <td class="p-2 font-mono text-xs">#20260518-002</td>
+                                        <td class="p-2">李女士</td>
+                                        <td class="p-2 font-semibold">¥ 980</td>
+                                        <td class="p-2"><span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">待付款</span></td>
+                                        <td class="p-2 text-zhihu cursor-pointer">催付</td>
+                                    </tr>
+                                    <tr class="border-t hover:bg-gray-50">
+                                        <td class="p-2 font-mono text-xs">#20260518-003</td>
+                                        <td class="p-2">王总</td>
+                                        <td class="p-2 font-semibold">¥ 12,500</td>
+                                        <td class="p-2"><span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">配送中</span></td>
+                                        <td class="p-2 text-zhihu cursor-pointer">追踪</td>
+                                    </tr>
+                                    <tr class="border-t hover:bg-gray-50">
+                                        <td class="p-2 font-mono text-xs">#20260518-004</td>
+                                        <td class="p-2">赵小姐</td>
+                                        <td class="p-2 font-semibold">¥ 5,600</td>
+                                        <td class="p-2"><span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-xs">已退款</span></td>
+                                        <td class="p-2 text-zhihu cursor-pointer">详情</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
+                <strong>✅ 注意：</strong>上面这个"原型"<strong>不是图片</strong>，它就是真实的 HTML 元素，可以点击、可以悬停、可以缩放、可以让客户当场指着说"把这个状态颜色换一下"。Markdown 永远做不到这件事。
+            </div>
+        </section>
+
+        <!-- 第六节 · 选型对比 -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">六、横向对比，结论一目了然</h2>
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-zhihu/10">
+                            <th class="border border-gray-200 px-3 py-2 text-left font-semibold text-zhihu">维度</th>
+                            <th class="border border-gray-200 px-3 py-2 text-left font-semibold text-zhihu">三位一体 HTML</th>
+                            <th class="border border-gray-200 px-3 py-2 text-left font-semibold">Markdown</th>
+                            <th class="border border-gray-200 px-3 py-2 text-left font-semibold">Word</th>
+                            <th class="border border-gray-200 px-3 py-2 text-left font-semibold">Notion</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr>
+                            <td class="border border-gray-200 px-3 py-2">AI 一次性生成</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success font-bold">✅ 完美</td>
+                            <td class="border border-gray-200 px-3 py-2">✅ 完美</td>
+                            <td class="border border-gray-200 px-3 py-2 text-danger">❌ 二进制</td>
+                            <td class="border border-gray-200 px-3 py-2 text-warning">⚠️ 接口</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            <td class="border border-gray-200 px-3 py-2">架构图真渲染</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success font-bold">✅ Mermaid SVG</td>
+                            <td class="border border-gray-200 px-3 py-2 text-danger">❌ ASCII 或源码</td>
+                            <td class="border border-gray-200 px-3 py-2 text-warning">⚠️ 需 Visio</td>
+                            <td class="border border-gray-200 px-3 py-2">⚠️ 部分支持</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-3 py-2">界面原型</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success font-bold">✅ 真实可交互</td>
+                            <td class="border border-gray-200 px-3 py-2 text-danger">❌ 全靠脑补</td>
+                            <td class="border border-gray-200 px-3 py-2 text-danger">❌ 截图嵌入</td>
+                            <td class="border border-gray-200 px-3 py-2">⚠️ 嵌图</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            <td class="border border-gray-200 px-3 py-2">客户/甲方可读</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success font-bold">✅ 双击 .html</td>
+                            <td class="border border-gray-200 px-3 py-2 text-danger">❌ 看到 #、graph TD</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success">✅ 装机率高</td>
+                            <td class="border border-gray-200 px-3 py-2 text-warning">⚠️ 需账号</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-200 px-3 py-2">Git diff 友好</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success font-bold">✅ 纯文本</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success">✅ 纯文本</td>
+                            <td class="border border-gray-200 px-3 py-2 text-danger">❌ 二进制</td>
+                            <td class="border border-gray-200 px-3 py-2 text-danger">❌ 平台锁定</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            <td class="border border-gray-200 px-3 py-2">导出 PDF</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success font-bold">✅ window.print()</td>
+                            <td class="border border-gray-200 px-3 py-2 text-warning">⚠️ 排版崩坏</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success">✅ 原生</td>
+                            <td class="border border-gray-200 px-3 py-2">⚠️ 残缺</td>
+                        </tr>
+                        <tr class="bg-zhihu/5 font-semibold">
+                            <td class="border border-gray-200 px-3 py-2">综合评分</td>
+                            <td class="border border-gray-200 px-3 py-2 text-success">9.7</td>
+                            <td class="border border-gray-200 px-3 py-2">5.0</td>
+                            <td class="border border-gray-200 px-3 py-2">5.5</td>
+                            <td class="border border-gray-200 px-3 py-2">5.5</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
+                    <strong>✅ 适用：</strong>技术方案、架构设计、API 文档、产品 PRD、复盘报告——凡是<strong>含图、含原型、要给非程序员看的</strong>都强烈推荐。
+                </div>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900">
+                    <strong>⚠️ 不必：</strong>纯文字博客、Issue 评论、聊天记录这种简单内容——继续用 Markdown 就好，杀鸡不必用牛刀。
+                </div>
+            </div>
+        </section>
+
+        <!-- 第七节 · FAQ -->
+        <section class="mb-10 bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">七、看到这里你可能还有几个问题</h2>
+
+            <div class="space-y-3">
+                <details class="border rounded-lg" open>
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50 text-gray-800">
+                        Q1：AI 真的能一次吐一份完整 HTML 吗？
+                    </summary>
+                    <div class="p-4 pt-0 border-t text-gray-700">
+                        能。GPT-4o / Claude Opus / Gemini 1.5 都能一次输出 1000+ 行的 HTML，结构、Mermaid、Tailwind class、Prism 代码块全部到位。<strong>本文就是 AI 一次性生成的</strong>。
+                    </div>
+                </details>
+                <details class="border rounded-lg">
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50 text-gray-800">
+                        Q2：CDN 离线打不开怎么办？
+                    </summary>
+                    <div class="p-4 pt-0 border-t text-gray-700">
+                        把 Tailwind / Mermaid / Prism 三个 JS 文件下载到本地，把 <code>&lt;script src=&gt;</code> 改成相对路径，一次配置永久离线。
+                    </div>
+                </details>
+                <details class="border rounded-lg">
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50 text-gray-800">
+                        Q3：Mermaid 画不出复杂的多层架构图怎么办？
+                    </summary>
+                    <div class="p-4 pt-0 border-t text-gray-700">
+                        简单图用 Mermaid，<strong>多层等宽架构图直接用 Tailwind HTML 自己画</strong>（flex + grid 强制等宽对齐）。本文里的「订单后台原型」就是 Tailwind HTML 写的，根本不依赖 Mermaid。
+                    </div>
+                </details>
+                <details class="border rounded-lg">
+                    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50 text-gray-800">
+                        Q4：客户的电脑没装浏览器怎么办？
+                    </summary>
+                    <div class="p-4 pt-0 border-t text-gray-700">
+                        ……如果 2026 年还有这种客户，建议你换工作。
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- 结尾 · 互动 -->
+        <section class="mb-10 bg-gradient-to-br from-zhihu/10 to-purple-100 rounded-xl p-6 sm:p-8 border border-zhihu/20">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">写在最后</h2>
+            <div class="prose-zhihu">
+                <p>
+                    回到开头。被 AI 用 ASCII 字符画劝退之后，我把提示词改成了「请生成单文件 HTML」。<strong>同一个 AI、同一个需求，5 分钟出方案，客户当场拍板。</strong>
+                </p>
+                <span class="quote-line">不是 AI 不行，是你给它的画布太小了。</span>
+                <p>
+                    Markdown 是一个伟大的格式，它简单、纯文本、Git 友好——这些优点 HTML 一样不少。但是<strong>当你需要表达一个真实的技术系统</strong>：分层、流程、原型、交互、品牌色、可打印——Markdown 那套语法集，撑不起 2026 年 AI 的产出。
+                </p>
+                <p>
+                    所以下次让 AI 写技术文档时，请把提示词最后一句改成：
+                </p>
+                <blockquote>
+                    请输出单文件 HTML，使用 Tailwind CSS + Mermaid + Prism.js，禁止 ASCII 架构图。
+                </blockquote>
+                <p>
+                    就这一句话，能省你一晚上加班。
+                </p>
+            </div>
+
+            <div class="mt-6 flex flex-wrap items-center gap-3 pt-4 border-t border-zhihu/20">
+                <button class="bg-zhihu text-white px-5 py-2 rounded-full font-medium hover:opacity-90 transition flex items-center gap-2">
+                    <span>👍</span><span>赞同 1.2 万</span>
+                </button>
+                <button class="bg-white text-gray-700 px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-50 transition flex items-center gap-2">
+                    <span>💬</span><span>评论 348</span>
+                </button>
+                <button class="bg-white text-gray-700 px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-50 transition flex items-center gap-2">
+                    <span>⭐</span><span>收藏 5.6k</span>
+                </button>
+                <button class="bg-white text-gray-700 px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-50 transition flex items-center gap-2">
+                    <span>↗</span><span>分享</span>
+                </button>
+            </div>
+            <p class="mt-4 text-sm text-gray-600">
+                如果这篇对你有帮助，<strong class="text-zhihu">点个赞 + 收藏</strong>，下次让 AI 写文档时回来翻翻。也欢迎评论区聊聊：<strong>你最近一次被 AI 输出的 ASCII 架构图劝退是什么时候？</strong>
+            </p>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t mt-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500">
+            <p>© 2026 码农老王 · 本文采用「三位一体」格式撰写 · 单文件 HTML，自带 Mermaid 与 Tailwind</p>
+            <p class="mt-1">本页源码 = 你看到的成品，欢迎右键查看源代码 🛠️</p>
+        </div>
+    </footer>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true, htmlLabels: true, actorMargin: 50 }
+        });
+
+        function copyCode(btn) {
+            const wrapper = btn.closest('.code-block-wrapper');
+            const codeEl = wrapper.querySelector('pre code');
+            if (!codeEl) return;
+            const text = codeEl.innerText;
+            const done = () => {
+                const original = btn.textContent;
+                btn.textContent = '已复制 ✓';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.classList.remove('copied');
+                }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+            } else {
+                fallbackCopy(text, done);
+            }
+        }
+
+        function fallbackCopy(text, done) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+
+        function exportToPDF() {
+            const btn = document.getElementById('exportPdfBtn');
+            const originalText = btn ? btn.textContent : '';
+            if (btn) {
+                btn.textContent = '⏳ 准备中...';
+                btn.disabled = true;
+            }
+            const ready = (document.fonts && document.fonts.ready) || Promise.resolve();
+            ready.then(() => new Promise(r => setTimeout(r, 300))).then(() => {
+                if (btn) {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+                window.print();
+            });
+        }
+    </script>
+</body>
+</html>
