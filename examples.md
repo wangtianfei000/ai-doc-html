@@ -4,165 +4,149 @@
 
 ---
 
-## 示例 1：生成新的技术方案文档
+## 示例 1：生成技术博客文章
 
 **用户输入**：
-> 请用三位一体格式生成《订单系统重构技术方案》文档，包含：背景、整体架构图（4 层）、核心模块时序图、关键代码示例（Python/SQL）、上线步骤流程图。
+> 写一篇关于 "Rust async/await 最佳实践" 的技术博客，带架构图和代码示例，输出为 Markdown 渲染格式。
 
 **智能体应执行的工作流**：
 
-1. 参考 [example.html](example.html) 的骨架与写法（不是复制该文件）
-2. 生成顶部导航 `<h1>` → "订单系统重构技术方案"
-3. 生成主标题区
-4. 按章节生成内容：
-    - 一、背景 → 富文本章节（`prose-custom`）
-    - 二、整体架构 → **Tailwind HTML 多层架构图**（4 层等宽，参见 reference.md §1）
-    - 三、核心模块 → Mermaid `sequenceDiagram`
-    - 四、代码示例 → Prism.js `language-python` / `language-sql`
-    - 五、上线流程 → Mermaid `flowchart TD` 含判断分支
-5. 保留 CDN、`exportToPDF`、打印 CSS、Mermaid 居中规则
-6. 输出完整单文件 HTML
+1. 使用 HTML 渲染模板（见 SKILL.md → 构建模块速查 §1）
+2. 在 `<script type="text/markdown">` 块内编写：
+   - `# Rust async/await 最佳实践`（H1 标题）
+   - `## 一、异步运行时选型`（H2 章节）
+   - ```` ```mermaid ```` 架构图（`flowchart TD`）
+   - `## 二、核心代码示例` + ```` ```rust ```` 代码块
+   - `## 三、性能对比` + Markdown 表格
+   - `> 总结要点` 引用块
+3. 使用内联最小化 CSS（参考 [example.html](example.html) 的 `<style>` 块）
+4. 保留 marked.js + Mermaid + Prism 渲染脚本
 
 ---
 
-## 示例 2：基于现有 ai_doc.HTML 增加新章节
+## 示例 2：将已有 Markdown 文章转为 HTML 渲染模板
 
 **用户输入**：
-> 在现有文档中追加一节"七、安全设计"，包含权限矩阵表格 + 鉴权流程时序图。
+> 把这篇 Markdown 文章转成 HTML 渲染格式，用内联 CSS 版。
+
+**参考文件**：`demo-pure.md`（约 360 行纯 Markdown）
 
 **智能体应执行的工作流**：
 
-1. 用 `read_file` 读取 [ai_doc.HTML](file:///d:/Document/4.AIStudy/12.SKILLS/1.AI-Doc/ai_doc.HTML)
-2. 在原"六、常见问题" 章节之前**插入**新 `<section>`：
-
-```html
-<section class="mb-12 bg-white rounded-xl shadow-sm p-8">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">七、安全设计</h2>
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">7.1 权限矩阵</h3>
-    <!-- 表格 -->
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 mt-6">7.2 鉴权流程</h3>
-    <div class="border rounded-lg p-4 bg-gray-50">
-        <pre class="mermaid">
-sequenceDiagram
-    ...
-        </pre>
-    </div>
-</section>
-```
-
-3. 同步将原"六、常见问题"重新编号为"八、常见问题"（如有跨节引用，全部更新）
-4. 用 `search_replace` 工具完成上述插入与重编号
+1. 读取源 Markdown 文件
+2. 创建 HTML 渲染模板（使用 SKILL.md → 构建模块速查 §1 骨架）
+3. 将 Markdown 原文放入 `<script type="text/markdown">` 块，放在文件最前面（第 4 行起）
+4. 使用内联最小化 CSS（参考 [example.html](example.html) 的 `<style>` 块）
+5. 处理转义：检查 Markdown 中是否含 `</script>`，若有则替换为 `<\/script>`
+6. 保留所有 CDN 引用和渲染脚本
 
 ---
 
-## 示例 3：将复杂架构图从 Mermaid 改为 Tailwind HTML
+## 示例 3：生成教程文档
 
-**触发条件**：用户反馈"架构图各层宽度不对齐"或"层级间距不齐"。
+**用户输入**：
+> 生成一份 "Redis 从入门到实战" 的教程文档，7 个章节，带架构图和命令行示例。
 
 **智能体应执行的工作流**：
 
-1. 定位原 `<pre class="mermaid">` 块中的 `flowchart TB` + 多 `subgraph` 结构
-2. 改写为 [reference.md](reference.md) §1 中的 Tailwind HTML 等宽方案
-3. 关键检查：
-    - 每层使用 `flex` + 左侧固定宽度 `w-10` 标签 + 右侧 `flex-1` 内容
-    - 层级颜色使用同一色族的 `100`/`50` 浓度（标签栏深、内容区浅）
-    - 使用 `style="writing-mode:vertical-rl;letter-spacing:0.4em;"` 实现纵向层名
-    - 子模块用 `border-dashed` 区分嵌套
-4. 在图下方补充提示框：说明为何使用 Tailwind HTML 而非 Mermaid
+1. 章节结构：
+   ```markdown
+   # Redis 从入门到实战
+   
+   ## 一、Redis 核心概念
+   ## 二、五种数据结构
+   ## 三、持久化机制
+   ## 四、主从复制
+   ## 五、哨兵模式
+   ## 六、集群方案
+   ## 七、实战案例
+   ```
+2. 架构图用 ```` ```mermaid ````（自动渲染）
+3. 命令示例用 ```` ```bash ````
+4. 配置示例用 Markdown 表格
+5. 保留细节的用 `<details>` 折叠块
 
 ---
 
-## 示例 4：添加交互式界面原型
+## 示例 4：生成技术方案文档
 
 **用户输入**：
-> 在文档末尾加一个"管理后台原型"，含侧边栏导航 + 顶部搜索 + 数据表格。
+> 生成一份《微服务架构改造方案》，包含：背景分析、架构图（多服务交互）、核心模块时序图、技术选型对比表、上线步骤流程图。
 
 **智能体应执行的工作流**：
 
-1. 在合适章节内插入：
-
-```html
-<div class="border rounded-lg overflow-hidden shadow-lg">
-    <!-- 标题栏（macOS 风格三色按钮） -->
-    <div class="bg-gray-800 text-white px-4 py-2 flex items-center">
-        <div class="flex space-x-2 mr-4">
-            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-        </div>
-        <span class="text-sm">管理后台 - 原型演示</span>
-    </div>
-    <!-- 内容区 -->
-    <div class="flex h-[600px]">
-        <!-- 侧边栏 -->
-        <aside class="w-56 bg-gray-50 border-r p-4">...</aside>
-        <!-- 主内容 -->
-        <main class="flex-1 p-6">...</main>
-    </div>
-</div>
-```
-
-2. 使用真实 HTML 控件（`<input>`、`<button>`、`<select>`、`<table>`）保留交互性
-3. 必要时添加内联 `onclick` 事件演示交互
+1. 在 Markdown 中组织内容：
+   - `## 一、背景分析` — 纯文本 + 引用块突出要点
+   - `## 二、整体架构` — ```` ```mermaid ```` `graph TD` 展示服务拓扑
+   - `## 三、核心模块` — ```` ```mermaid ```` `sequenceDiagram` 展示调用链
+   - `## 四、技术选型` — Markdown 表格对比方案
+   - `## 五、上线流程` — ```` ```mermaid ```` `flowchart TD` 含判断分支
+2. 保留 PDF 导出功能
 
 ---
 
-## 示例 5：仅生成代码块片段嵌入
+## 示例 5：追加新章节到已有文档
 
 **用户输入**：
-> 在 3.7 节追加一段 Go 代码示例。
+> 在现有文档中追加一节"安全设计"，包含权限矩阵表格 + 鉴权流程时序图。
 
 **智能体应执行的工作流**：
 
-1. 检查 head 是否已加载 Go Prism 组件，若无则补加：
-    ```html
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-go.min.js"></script>
-    ```
-2. 插入代码块：
-
-```html
-<h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">3.7 Go</h3>
-<div class="code-block-wrapper">
-    <div class="code-block-header">
-        <span class="lang-tag"><span class="lang-dot"></span>go</span>
-        <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
-    </div>
-<pre class="language-go"><code class="language-go">package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello")
-}</code></pre>
-</div>
-```
-
-3. 严格检查代码内的 `<` `>` `&` 已转义
+1. 读取现有 HTML 文件
+2. 在 `<script type="text/markdown">` 块的末尾（`</script>` 之前）追加：
+   ```markdown
+   ## 七、安全设计
+   
+   ### 7.1 权限矩阵
+   
+   | 角色 | 读取 | 写入 | 删除 |
+   |-----|------|------|------|
+   | 管理员 | ✓ | ✓ | ✓ |
+   | 编辑 | ✓ | ✓ | ✗ |
+   | 访客 | ✓ | ✗ | ✗ |
+   
+   ### 7.2 鉴权流程
+   
+   ```mermaid
+   sequenceDiagram
+       U->>网关: 请求
+       网关->>认证: 验证 Token
+       alt 有效
+           认证-->>网关: 通过
+           网关->>服务: 转发
+       else 无效
+           认证-->>网关: 拒绝
+           网关-->>U: 401
+       end
+   ```
+   ```
 
 ---
 
 ## 提示词样例（给最终用户使用）
 
 ```
-请使用 ai-doc-html Skill 生成一个完整的单文件 HTML 文档：
+请使用 ai-doc-html Skill（Markdown 渲染格式）生成文档：
 
 【文档标题】[填写]
+【文档类型】博客 / 教程 / 技术文档
 【目标读者】[填写]
-【核心章节】
+
+【章节大纲】
 1. [章节1标题及要点]
 2. [章节2标题及要点]
 ...
 
-【图表需求】
-- 架构图：[简单/复杂多层]，描述 [...]
-- 流程图：[是否含判断分支]，描述 [...]
-- 时序图：[参与方与交互过程]
+【图表需求（Mermaid）】
+- 架构图：[描述···]
+- 流程图：[描述···]
 
-【代码示例语言】[js/python/java/...]
+【代码示例语言】[js/python/go/rust/...]
 
-【界面原型】[是/否，描述]
-
-【其他要求】[配色、风格、品牌等]
+【输出要求】
+- 使用 HTML 渲染模板 + Markdown 内容体格式
+- Markdown 内容放在文件最前面（第 4 行起）
+- 保留 marked.js + Mermaid + Prism.js 渲染引擎
 ```
 
-智能体收到后会自动按照 SKILL.md 工作流，参考 example.html 的写法重新生成一份独立的 HTML。
+智能体收到后会自动按 SKILL.md 工作流生成。

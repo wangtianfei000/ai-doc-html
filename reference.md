@@ -4,86 +4,109 @@
 
 ---
 
-## 1. 复杂多层架构图示例（Tailwind HTML 等宽方案）
+## 1. 架构详解
 
-> **使用场景**：≥ 3 层、含子系统嵌套、需层级**严格等宽对齐**的企业级架构图。Mermaid `subgraph` 在此场景下宽度无法对齐，必须改用 HTML。
+> **使用场景**：博客文章、教程文档、内容密集文档、快速 AI 生成场景。
 
-### 1.1 整体骨架
+### 1.1 文件结构（内容优先）
 
-```html
-<div class="border-2 border-cyan-300 rounded-lg overflow-hidden bg-white shadow-sm">
-    <!-- 顶部标题（可选） -->
-    <div class="bg-cyan-100 text-cyan-900 text-center py-2 font-bold border-b-2 border-cyan-300">
-        系统架构总览
-    </div>
-
-    <!-- 重复多层（每层一个 .flex 行） -->
-    <div class="flex border-b-2 border-{color}-300">
-        <!-- 左侧纵向标签栏，固定宽度 -->
-        <div class="w-10 bg-{color}-100 flex items-center justify-center border-r-2 border-{color}-300">
-            <span class="text-{color}-900 text-sm font-bold"
-                  style="writing-mode:vertical-rl;letter-spacing:0.4em;">层级名称</span>
-        </div>
-        <!-- 右侧内容区，flex-1 占满剩余宽度（关键！保证等宽） -->
-        <div class="flex-1 bg-{color}-50 p-3">
-            <!-- grid 布局 -->
-        </div>
-    </div>
-</div>
+```
+行 1:    <!DOCTYPE html>
+行 2:    <html lang="zh-CN">
+行 3:    <head>
+行 4:    <script type="text/markdown" id="md-source">
+行 5–N:   ← 纯 Markdown 内容，从第 5 行开始，打开即可阅读
+          # 标题
+          ## 章节
+          正文…
+          ```mermaid
+          graph TD ...
+          ```
+          ```js
+          code...
+          ```
+行 N+1:  </script>
+行 N+2:  <meta charset="UTF-8"> ← CDN / <style> / </head> / <body> / 渲染脚本
 ```
 
-### 1.2 每层内部布局选择
+**设计意图**：Markdown 内容放在最前面，人与 AI 都能直接从第 5 行开始阅读，无需翻阅基础设施代码。
 
-| 层类型 | 推荐 grid 列数 | 示例 |
+### 1.2 CDN 依赖
+
+| CDN | 用途 | 版本 |
 |---|---|---|
-| 业务应用层（多子系统） | `grid-cols-12` 切分 5+2+5 | 左子系统 / 中间箭头 / 右子系统 |
-| 服务支持层 | `grid-cols-5` × N 行 | 10 个微服务排 2 行 |
-| 数据资源层 | `grid-cols-6` | 6 个数据库图标 |
-| 基础设施层 | `grid-cols-5` | 服务器/OS/网络/数据库等 |
+| `marked.js` | Markdown → HTML 运行时渲染 | v15 |
+| `mermaid` | 图表渲染 | v11 |
+| `prism.js` + 主题 + 语言组件 | 代码语法高亮 | v1.29 |
+| `tailwindcss` | 页面框架布局（非内容样式） | v4 CDN |
 
-### 1.3 推荐配色（Tailwind v4）
+### 1.3 渲染器核心逻辑
 
-| 层级语义 | 颜色族 | 示例 class |
-|---|---|---|
-| 接入/展示层 | `sky` 或 `blue` | `bg-sky-50/100`、`border-sky-300` |
-| 业务应用层 | `cyan` 或 `emerald` | `bg-cyan-50/100`、`border-cyan-300` |
-| 应用支持层/中间件 | `yellow` 或 `amber` | `bg-yellow-50/100` |
-| 数据/信息资源层 | `orange` | `bg-orange-50/100` |
-| IT 基础设施层 | `green` | `bg-green-50/100` |
+```javascript
+// 1. 读取 Markdown 源码
+const src = document.getElementById('md-source');
+let md = src.textContent;
+// 安全处理：防止 </script> 截断
+md = md.replace(/<\/script/gi, '<\\/script');
 
-### 1.4 子系统嵌套与跨系统数据流
+// 2. 配置 marked.js
+marked.setOptions({ breaks: true, gfm: true });
 
-```html
-<div class="grid grid-cols-12 gap-2">
-    <!-- 左子系统 -->
-    <div class="col-span-5 border-2 border-dashed border-cyan-400 rounded-lg p-2">
-        <div class="text-center font-semibold text-cyan-800 mb-2">子系统A</div>
-        <!-- 内部模块 -->
-    </div>
-    <!-- 中间业务流向箭头 -->
-    <div class="col-span-2 flex flex-col justify-around items-center">
-        <div class="text-xs text-cyan-700">数据流1 →</div>
-        <div class="text-xs text-cyan-700">数据流2 ←</div>
-    </div>
-    <!-- 右子系统 -->
-    <div class="col-span-5 border-2 border-dashed border-cyan-400 rounded-lg p-2">
-        <div class="text-center font-semibold text-cyan-800 mb-2">子系统B</div>
-    </div>
-</div>
+// 3. 自定义 renderer：区分 Mermaid 与普通代码块
+const renderer = new marked.Renderer();
+renderer.code = function(token) {
+  const code = typeof token === 'string' ? token : (token.text || token.raw || '');
+  const lang = typeof token === 'string' ? '' : (token.lang || '');
+  
+  if (lang === 'mermaid') {
+    return `<div class="mermaid-wrapper my-4 p-4 bg-gray-50 border rounded-lg">
+      <pre class="mermaid">${code}</pre></div>`;
+  }
+  
+  // 普通代码块：HTML 转义
+  const safe = code
+    .replace(/<\\\/script/gi, '<\/script')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return `<pre class="language-${lang || 'plaintext'}"><code class="language-${lang || 'plaintext'}">${safe}</code></pre>`;
+};
+
+// 4. 渲染到 DOM
+document.getElementById('content').innerHTML = marked.parse(md, { renderer });
+
+// 5. 异步渲染 Mermaid（200ms 延迟等待 DOM 就绪）
+mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+setTimeout(() => {
+  document.querySelectorAll('.mermaid-wrapper .mermaid').forEach(el => {
+    if (el.textContent.trim()) mermaid.run({ nodes: [el] });
+  });
+}, 200);
+
+// 6. 异步高亮代码（500ms 确保 Mermaid 已完成）
+setTimeout(() => { window.Prism && Prism.highlightAll(); }, 500);
 ```
 
-### 1.5 模块卡片样式
+### 1.4 执行时序
 
-```html
-<!-- 模块分组容器 -->
-<div class="border border-dashed border-cyan-400 rounded p-1.5">
-    <div class="text-xs font-medium text-cyan-700 text-center mb-1">分组标题</div>
-    <div class="grid grid-cols-2 gap-1.5">
-        <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">模块1</div>
-        <div class="bg-white border border-cyan-400 rounded text-center text-xs py-1">模块2</div>
-    </div>
-</div>
 ```
+页面加载
+  ↓
+读取 <script type="text/markdown"> 内容
+  ↓              ↓
+</script> 转义   标记配置
+  ↓              ↓
+marked.parse() ← 自定义 renderer
+  ↓
+innerHTML 写入 DOM
+  ↓
+┌─────────────┬──────────────┐
+│ 200ms 后    │ 500ms 后     │
+│ mermaid.run │ Prism.highlightAll │
+│ (图表渲染)   │ (代码高亮)    │
+└─────────────┴──────────────┘
+```
+
+**关键**：500ms 延迟确保 Mermaid SVG 已插入 DOM，Prism 不会误处理 Mermaid 代码块。
 
 ---
 
@@ -161,6 +184,13 @@ erDiagram
 
 可选 theme：`default` / `neutral` / `dark` / `forest` / `base`。
 
+### 2.5 Markdown 中嵌入 Mermaid 注意事项
+
+- 使用 ` ```mermaid ``` ` 围栏代码块（不是 ` ```mermaid ` 加空格）
+- 每行缩进不要超出 Mermaid 语法规范（顶格写最安全）
+- 中文节点名需要用引号包裹：`A["节点名称"]`
+- 不要在 Mermaid 块中使用 Markdown 语法（如 `**粗体**`）
+
 ---
 
 ## 3. Prism.js 代码高亮扩展
@@ -179,102 +209,134 @@ js / ts / python / java / bash / json / sql / yaml
 
 常用语言名：`go`、`rust`、`csharp`、`kotlin`、`swift`、`docker`、`nginx`、`graphql`、`markdown`、`xml`、`scss`、`tsx`、`jsx`、`vue`。
 
-### 3.3 代码块完整结构（含复制按钮）
+### 3.3 Markdown 代码块注意事项
 
-```html
-<div class="code-block-wrapper">
-    <div class="code-block-header">
-        <span class="lang-tag"><span class="lang-dot"></span>python</span>
-        <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
-    </div>
-<pre class="language-python"><code class="language-python">def hello():
-    print("Hello")</code></pre>
-</div>
-```
-
-### 3.4 HTML 转义对照
-
-| 原字符 | 转义 |
-|---|---|
-| `<` | `&lt;` |
-| `>` | `&gt;` |
-| `&` | `&amp;` |
-| `"` | `&quot;`（属性内）|
-
-**忽略转义** = 浏览器误解析。务必检查包含泛型 `<T>`、比较 `a > b`、引用 `&amp;` 的代码。
+- 语言名需与 Prism 组件名一致（` ```js ``` `→ `prism-js`，` ```python ``` `→ `prism-python`）
+- 不带语言名的代码块会被标记为 `language-plaintext`
+- 代码块中的 HTML 标签由 renderer 自动转义，无需手动处理
 
 ---
 
 ## 4. 打印 / PDF 导出 CSS
 
-示例中默认已包含。若新增大型组件，需在 `<style media="print">` 中追加：
-
 ```css
-.your-component {
-    page-break-inside: avoid;
-    break-inside: avoid;
+@media print {
+  nav, footer, .no-print { display: none !important; }
+  body { background: white; font-size: 12pt; }
+  #content { box-shadow: none; padding: 0; }
+  .mermaid-wrapper { page-break-inside: avoid; break-inside: avoid; }
+  pre { page-break-inside: avoid; break-inside: avoid; white-space: pre-wrap; }
+  table { page-break-inside: avoid; break-inside: avoid; }
+  h2, h3 { page-break-after: avoid; }
 }
 ```
 
-强制不分页元素：图表、表格、代码块、卡片。
+强制不分页元素：图表（`.mermaid-wrapper`）、代码块（`pre`）、表格（`table`）、标题（`h2`/`h3`）。
 
 ---
 
-## 5. 配色与组件速查
+## 5. Markdown 内容编写规范
 
-### 5.1 章节卡片
-```html
-<section class="mb-12 bg-white rounded-xl shadow-sm p-8">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">标题</h2>
-</section>
+### 5.1 章节结构
+
+```markdown
+# 文档主标题（H1，只用一次）
+
+## 一、第一章节（H2，中文序号）
+正文段落...
+
+### 1.1 子标题（H3）
+内容...
+
+## 二、第二章节
+...
 ```
 
-### 5.2 提示框（4 种语义色）
+- H1 只用一次作为文档标题
+- 章节用 H2 + 中文序号（一、二、三…）
+- 子节用 H3 + 数字序号（1.1, 1.2…）
 
-```html
-<!-- 信息 -->
-<div class="p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800">
-    <strong>💡 提示：</strong>...
-</div>
-<!-- 成功 -->
-<div class="p-4 bg-green-50 rounded-lg border border-green-200 text-green-800">
-    <strong>✅ 完成：</strong>...
-</div>
-<!-- 警告 -->
-<div class="p-4 bg-amber-50 rounded-lg border border-amber-200 text-amber-800">
-    <strong>⚠️ 注意：</strong>...
-</div>
-<!-- 危险 -->
-<div class="p-4 bg-red-50 rounded-lg border border-red-200 text-red-800">
-    <strong>🚫 警告：</strong>...
-</div>
+### 5.2 Mermaid 图表
+
+````markdown
+```mermaid
+graph TD
+    A[开始] --> B{判断}
+    B -->|是| C[处理]
+    B -->|否| D[结束]
+```
+````
+
+支持全部 Mermaid 图表类型：flowchart / sequenceDiagram / classDiagram / erDiagram / gantt / pie。
+
+### 5.3 代码块
+
+````markdown
+```python
+def hello():
+    print("Hello, World!")
 ```
 
-### 5.3 表格
-
-```html
-<div class="overflow-x-auto">
-    <table class="w-full border-collapse">
-        <thead>
-            <tr class="bg-gray-50">
-                <th class="border border-gray-200 px-4 py-3 text-left">列1</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td class="border border-gray-200 px-4 py-3">值</td></tr>
-        </tbody>
-    </table>
-</div>
+```sql
+SELECT * FROM users WHERE active = 1;
 ```
 
-### 5.4 折叠 FAQ
+```bash
+npm install && npm run build
+```
+````
+
+语言名需与 Prism 组件名一致。默认加载：js / python / bash / json / markup。
+
+### 5.4 表格
+
+```markdown
+| 对比维度 | 方案A | 方案B |
+|---------|------|------|
+| 性能    | ★★★★ | ★★★ |
+| 成本    | 中等  | 低   |
+```
+
+### 5.5 引用块
+
+```markdown
+> 这是普通引用块，用于突出关键信息。
+
+> **💡 提示**：可以加入 emoji 增强可读性。
+```
+
+### 5.6 折叠块（直接 HTML）
 
 ```html
-<details class="border rounded-lg">
-    <summary class="p-4 font-medium cursor-pointer hover:bg-gray-50">问题</summary>
-    <div class="p-4 pt-0 border-t"><p class="text-gray-600">答案</p></div>
+<details>
+<summary>点击展开：详细说明</summary>
+
+这里的内容默认折叠，点击标题展开。支持嵌套 Markdown。
+
 </details>
 ```
+
+### 5.7 图片
+
+```markdown
+![架构图](https://picsum.photos/800/400)
+```
+
+或使用 HTML 控制尺寸：
+
+```html
+<img src="https://picsum.photos/800/400" width="100%" style="border-radius:8px" />
+```
+
+### 5.8 安全注意事项
+
+- **`</script>` 冲突**：Markdown 中避免直接写 `</script>`，若必须出现写为 `<\/script>`
+- **HTML 实体**：Markdown 自动处理 `<` `>` `&` 转义，但 `<script>` 标签需特殊处理
+- **内联 HTML**：可直接使用 `<kbd>Ctrl</kbd>`、`<mark>高亮</mark>`、`<del>删除</del>` 等 HTML 标签
+
+### 5.9 完整示例文件
+
+参考 [example.html](example.html)（约 493 行），包含：内联最小化 CSS（第 377–428 行）、完整 Markdown 内容体（第 4–361 行）、渲染脚本（第 456–490 行）。所有特殊内容类型（Mermaid 架构图/流程图、代码块、内联 HTML 界面原型、表格、引用块）均有实战示例。
 
 ---
 
@@ -285,5 +347,3 @@ js / ts / python / java / bash / json / sql / yaml
 | < 2000 行 | 单文件即可 |
 | 2000–5000 行 | 折叠次要章节用 `<details>`，启用 `content-visibility:auto` |
 | > 5000 行 | 拆分为多个 HTML 文件，用导航跳转 |
-
-示例已为 `.content-auto` 提供 `content-visibility: auto` 工具类，可对长章节启用以加速渲染。
